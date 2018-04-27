@@ -1,0 +1,83 @@
+@import url('https://fonts.googleapis.com/css?family=Open+Sans:400,700&subset=cyrillic');
+@import "~semantic-ui-css/semantic.min.css";
+
+body, h1, h2, h3, h4, h5 {
+  font-family: 'Open Sans','Helvetica Neue',Arial,Helvetica,sans-serif;
+}
+
+.navbar-container {
+    margin-bottom: 20px;
+}
+
+.order-wizard {
+    margin: 20px;
+
+    &__input-container {
+        position: relative;
+    }
+
+    &__input {
+        width: 100%;
+    }
+
+    &__remove-entry {
+        cursor: pointer;
+        display: inline-block;
+        padding: 5px 20px;
+        font-size: 25px;
+        color: #eb5050;
+        border-radius: 5px;
+        border: none;
+        box-shadow: none;
+        background: none;
+
+        &:hover {
+            background-color: #eb5050;
+            color: #fff;
+        }
+    }
+
+    &__validation-error {
+        display: inline-block;
+        position: absolute;
+        margin-top: 5px;
+        color: #eb5050;
+        top: 0;
+        background-color: #fff;
+        right: 10;
+        padding: 4px;
+    }
+
+    &__submit.ui.button {
+        margin-top: 10px;
+        font-size: 18pt;
+    }
+}
+
+.order-list {
+    &__table-container {
+        margin: 20px;
+    }
+}
+
+.react-autosuggest {
+    &__suggestions-container--open {
+        position: absolute;
+        background: #fff;
+        border: 1px #eee solid;
+    }
+
+    &__suggestions-list {
+        list-style: none;
+        padding: 5px 0;
+        margin: 0;
+    }
+
+    &__suggestion {
+        cursor: pointer;
+        padding: 5px 30px;
+        &--highlighted {
+            background-color: #ebebeb;
+        }
+    }
+}
