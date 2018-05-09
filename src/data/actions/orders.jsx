@@ -8,8 +8,8 @@ export function createOrder(values) {
   return (dispatch) => {
     const data = {
       date: moment().toISOString(),
-      orderEntries: JSON.stringify(values.entries),
-    }
+      entries: values.entries
+    };
     apiRequest('orders', { method: 'post', data }).then((res) => {
       const { id, ...order } = res.data;
       dispatch({
@@ -20,7 +20,7 @@ export function createOrder(values) {
       dispatch({
         type: ORDER_FAILED,
         payload: err.response
-      })
+      });
     });
-  }
+  };
 }

@@ -1,48 +1,50 @@
 import React, { Component } from 'react';
 import Autosuggest from 'react-autosuggest';
 import { connect } from 'react-redux';
-import { Field, FieldArray, reduxForm, reset } from 'redux-form';
+import { Field, FieldArray, reduxForm } from 'redux-form';
+import { getOrderFormEntries } from '../../data/selectors';
 import { apiRequest } from '../../data/requests';
 import axios from 'axios';
 import uuidValidate from 'uuid-validate';
+import update from 'immutability-helper';
 
 import { Table, Button, Input } from 'semantic-ui-react';
 
 const validate = values => {
-  const errors = {}
+  const errors = {};
 
   if (!values.date) {
-    errors.date = 'Required'
+    errors.date = 'Required';
   }
 
   if (!values.entries || !values.entries.length) {
-    errors.entries = { _error: 'At least one entry must exist' }
+    errors.entries = { _error: 'At least one entry must exist' };
   } else {
-    const entriesArrayErrors = []
+    const entriesArrayErrors = [];
   
     values.entries.forEach((entry, entryIndex) => {
-      const entryErrors = {}
+      const entryErrors = {};
       if (!entry || !entry.product || entry.product === '') {
-        entryErrors.product = 'Required'
-        entriesArrayErrors[entryIndex] = entryErrors
+        entryErrors.product = 'Required';
+        entriesArrayErrors[entryIndex] = entryErrors;
       }
       if (entry && entry.product && !uuidValidate(entry.product)) {
-        entryErrors.product = 'Invalid ID'
-        entriesArrayErrors[entryIndex] = entryErrors
+        entryErrors.product = 'Invalid ID';
+        entriesArrayErrors[entryIndex] = entryErrors;
       }
       if (!entry || !entry.amount) {
-        entryErrors.amount = 'Required'
-        entriesArrayErrors[entryIndex] = entryErrors
+        entryErrors.amount = 'Required';
+        entriesArrayErrors[entryIndex] = entryErrors;
       }
-    })
+    });
   
     if (entriesArrayErrors.length) {
-      errors.entries = entriesArrayErrors
+      errors.entries = entriesArrayErrors;
     }
   }
 
-  return errors
-}
+  return errors;
+};
 
 class ValidatedField extends Component {
   constructor(props) {
@@ -51,11 +53,11 @@ class ValidatedField extends Component {
 
   render() {
     return (
-      <div className='order-wizard__input-container'>
-        <Input className='order-wizard__input' {...this.props.input} type={this.props.type} placeholder={this.props.label} ref="input" />
-        {this.props.meta.touched && this.props.meta.error && <span className='order-wizard__validation-error'>{this.props.meta.error}</span>}
+      <div className="order-wizard__input-container">
+        <Input className="order-wizard__input" {...this.props.input} type={this.props.type} placeholder={this.props.label} />
+        {this.props.meta.touched && this.props.meta.error && <span className="order-wizard__validation-error">{this.props.meta.error}</span>}
       </div>
-    )
+    );
   }
 }
 
@@ -78,7 +80,7 @@ class ProductField extends Component {
     apiRequest(`products/find/${value}/10`, { cancel: this.cancelSource.token })
       .then((res) => {
         this.setState({ data: res.data });
-      }).catch((err) => {});
+      }).catch(() => {});
   };
 
   onSuggestionsClearRequested = () => {
@@ -91,7 +93,7 @@ class ProductField extends Component {
   }
 
   renderData(x) {
-    return <div>{x.name} ({x.id})</div>
+    return <div>{x.name} ({x.id})</div>;
   }
 
   render() {
@@ -108,10 +110,10 @@ class ProductField extends Component {
       ...this.props.input
     };
 
-    const renderInput = inputProps => (<Input {...inputProps} />)
+    const renderInput = inputProps => (<Input {...inputProps} />);
 
     return (
-      <div className='order-wizard__input-container'>
+      <div className="order-wizard__input-container">
         <Autosuggest
           suggestions={data}
           onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
@@ -122,9 +124,9 @@ class ProductField extends Component {
           inputProps={inputProps}
           renderInputComponent={renderInput}
         />
-        {this.props.meta.touched && this.props.meta.error && <span className='order-wizard__validation-error'>{this.props.meta.error}</span>}
+        {this.props.meta.touched && this.props.meta.error && <span className="order-wizard__validation-error">{this.props.meta.error}</span>}
       </div>
-    )
+    );
   }
 }
 
@@ -134,33 +136,33 @@ class OrderEntryArray extends Component {
     this.state = { prices: [] };
     this.cancelSource = axios.CancelToken.source();
 
+    this.getPrice = this.getPrice.bind(this);
     this.updatePrice = this.updatePrice.bind(this);
     this.sumPrices = this.sumPrices.bind(this);
   }
 
+  getPrice(index) {
+    if (this.state.prices[index] === undefined) {
+      return 0;
+    }
+    return this.state.prices[index];
+  }
+
   updatePrice(index, price) {
-    this.state.prices[index] = price;
+    this.setState({
+      prices: update(this.state.prices, {[index]: price})
+    });
   }
 
   sumPrices() {
-    if (!this.props.form.values || this.props.form.values.entries.length == 0) {
-      return 0;
-    }
-    const price = this.props.form.values.entries.map(
-      (x, i) => parseInt(x.amount) * (this.state.prices[i] === undefined ? 0 : this.state.prices[i])
-    ).reduce(
-      (prev, next) => prev + next
-    ).toFixed(2);
-    return isNaN(price) ? 0 : price;
+    const price = this.props.formEntries.map((x, i) => x * this.getPrice(i))
+      .reduce((prev, next) => prev + next, 0);
+    return (isNaN(price) ? 0 : price).toFixed(2);
   }
 
   priceFor(index) {
-    if (!this.props.form.values || this.props.form.values.entries.length == 0) {
-      return 0;
-    }
-    const price = parseInt(this.props.form.values.entries[index].amount) *
-      (this.state.prices[index] === undefined ? 0 : this.state.prices[index])
-    return isNaN(price) ? 0 : price.toFixed(2);
+    const price = this.props.formEntries[index] * this.getPrice(index);
+    return (isNaN(price) ? 0 : price).toFixed(2);
   }
 
   render() {
@@ -169,7 +171,7 @@ class OrderEntryArray extends Component {
         <div>
           <h2>New order</h2>
           <Button type="button" onClick={() => this.props.fields.push({})}>Add entry</Button>
-          {this.props.meta.touched && this.props.meta.error && <span className='order-wizard__validation-error'>{this.props.meta.error}</span>}
+          {this.props.meta.touched && this.props.meta.error && <span className="order-wizard__validation-error">{this.props.meta.error}</span>}
         </div>
         <Table celled>
           <Table.Header>
@@ -185,10 +187,12 @@ class OrderEntryArray extends Component {
             {this.props.fields.map((entry, index) =>
               <Table.Row key={index}>
                 <Table.Cell style={{textAlign: 'center'}}>
-                  <button className='order-wizard__remove-entry'
+                  <button className="order-wizard__remove-entry"
                     onClick={() => {
                       this.props.fields.remove(index);
-                      this.state.prices[index] = undefined;
+                      this.setState({
+                        prices: update(this.state.prices, { [index]: undefined })
+                      });
                     }}>x</button>
                 </Table.Cell>
                 <Table.Cell>
@@ -223,25 +227,25 @@ class OrderEntryArray extends Component {
           </Table.Body>
         </Table>
       </div>
-    )
+    );
   }
 }
 
 const OrderWizard = (props) => {
-  const { handleSubmit, submitting, reset, form } = props
+  const { handleSubmit, submitting, formEntries } = props;
 
   return (
     <form className={'order-wizard ' + (submitting ? 'order-wizard--submitting' : '')} onSubmit={handleSubmit}>
-      <FieldArray name="entries" form={form} component={OrderEntryArray}/>
+      <FieldArray name="entries" formEntries={formEntries} component={OrderEntryArray}/>
       <div>
-        <Button className='order-wizard__submit' type="submit" disabled={submitting}>Submit</Button>
+        <Button className="order-wizard__submit" type="submit" disabled={submitting}>Submit</Button>
       </div>
     </form>
-  )
-}
+  );
+};
 
 const mapStateToProps = (state) => { 
-  return { form: state.form.orderWizard };
+  return { formEntries: getOrderFormEntries(state) };
 };
 
 export default reduxForm({

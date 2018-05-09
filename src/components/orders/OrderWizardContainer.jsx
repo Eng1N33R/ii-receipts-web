@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { apiRequest } from '../../data/requests';
 import { createOrder } from '../../data/actions';
 import { connect } from 'react-redux';
 import OrderWizard from './OrderWizard';
@@ -18,7 +17,7 @@ class OrderWizardContainer extends Component {
     return (
       <OrderWizard 
         onSubmit={this.handleSubmit} />
-    )
+    );
   }
 }
 

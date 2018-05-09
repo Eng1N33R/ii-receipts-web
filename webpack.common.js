@@ -1,5 +1,4 @@
 const path = require('path');
-const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
@@ -16,7 +15,7 @@ const config = {
   plugins: [
     new HtmlWebpackPlugin({ title: 'Receipts', template: 'static/index.html' }),
     new CleanWebpackPlugin([DIST_DIR]),
-    new ExtractTextPlugin("public/style.css")
+    new ExtractTextPlugin('public/style.css')
   ],
   output: {
     path: DIST_DIR,
@@ -53,8 +52,7 @@ const config = {
       { test: /\.s?css$/, use: ExtractTextPlugin.extract({ fallback: 'style-loader', use: ['css-loader', 'sass-loader'], publicPath: '../' }) },
       { test: /\.jsx?$/, exclude: path.resolve(__dirname, 'node_modules'), use: 'babel-loader' },
       { test: /favicon\.ico/, use: 'file-loader?name=./favicon.ico' },
-      { test: /\.(jpe?g|gif|png|svg|woff2?|eot|ttf|wav|mp3)$/, use: 'file-loader?name=./public/[name].[ext]' },
-      //{ test: /\.html?$/, loader: "file", options: { context: DIST_DIR }},
+      { test: /\.(jpe?g|gif|png|svg|woff2?|eot|ttf|wav|mp3)$/, use: 'file-loader?name=./public/[name].[ext]' }
     ]
   }
 };
