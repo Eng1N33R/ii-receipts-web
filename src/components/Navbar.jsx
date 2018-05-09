@@ -12,9 +12,6 @@ export default () => (
             <Link to="/create">New</Link>
           </Menu.Item>
           <Menu.Item>
-            <Link to="/all">All</Link>
-          </Menu.Item>
-          <Menu.Item>
             <Link to="/session">Session</Link>
           </Menu.Item>
         </Menu.Menu>
